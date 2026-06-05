@@ -3359,7 +3359,7 @@ def hdldepends():
     look.filter_x_files_by_requirements()
 
     if args.top_file_type:
-        f_type_str, file_str = args.file_file_type
+        f_type_str, file_str = args.top_file_type
         f_type = string_to_FileObjType(f_type_str)
         f_loc = Path(file_str)
         assert isinstance(look, LookupPrj)

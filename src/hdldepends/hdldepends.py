@@ -737,7 +737,19 @@ class FileObjVhdl(FileObj):
         file_deps = []
 
         for p in self.vhdl_package_deps:
-            f_obj = look.get_vhdl_package(p, self)
+            try:
+                f_obj = look.get_vhdl_package(p, self)
+            except KeyError as e:
+                log.debug(f'Could not find package {p}. Check if it is acutally a module (this is valid VHDL code)')
+                try:
+                    f_obj = look.get_entity(p, self)
+                except KeyError:
+                    raise e
+                else:
+                    assert f_obj is not None
+                    log.info(f'Expected to find package {p} but found an entity instead. Required by file:\n'+
+                        f'  {f_obj.loc}')
+                    continue
             if f_obj is not None:
                 self._add_to_f_deps(file_deps, f_obj)
         return file_deps

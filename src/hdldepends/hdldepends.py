@@ -761,7 +761,7 @@ class FileObjVhdl(FileObj):
         if not isinstance(other, FileObjVhdl):
             return False
 
-        result = self.vhdl_packages == other.vhdl_packages and self.vhdl_package_deps == other.vhdl_package_deps
+        result = self.vhdl_packages == other.vhdl_packages and self.vhdl_package_deps == other.vhdl_package_deps and self.vhdl_component_deps == other.vhdl_component_deps
 
         if not result:
             return result
@@ -946,7 +946,7 @@ vhdl_regex_patterns = {
         re.DOTALL | re.IGNORECASE | re.MULTILINE,
     ),
     "component_inst": re.compile(
-        r"\s*(\w+)\s*:(?:\s*component)\s*(\w+)(?:\s*generic\s*map\s*\(.*?\))?\s*port\s*map\s*\(.*?\)\s*;",
+        r"\s*(\w+)\s*:(?:\s*component|)\s*(\w+)(?:\s*generic\s*map\s*\(.*?\))?\s*port\s*map\s*\(.*?\)\s*;",
         re.DOTALL | re.IGNORECASE | re.MULTILINE,
     ),
     "direct_inst": re.compile(

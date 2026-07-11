@@ -5,12 +5,12 @@ from pathlib import Path
 from typing import Dict, Optional, Set, Tuple
 
 from . import output
+from .api import apply_forced_init_files, select_top
 from .config import build_resolver
 from .constants import HDL_DEPENDS_VERSION_NUM, LIB_DEFAULT, __version__
 from .errors import ConfigError
 from .logging_util import set_log_level
 from .model import Name, SourceFile, string_to_filetype
-from .resolver import Resolver
 
 #: KINDs accepted by -o/--output, and the selector keys each allows.
 OUTPUT_KINDS: Dict[str, Set[Optional[str]]] = {
@@ -37,25 +37,6 @@ def _parse_output_kind(token: str) -> Tuple[str, Optional[str], Optional[str]]:
         allowed = ", ".join(sorted(s for s in OUTPUT_KINDS[kind] if s)) or "(none)"
         raise argparse.ArgumentTypeError(f"output kind '{kind}' does not accept selector '{sel_key}'; allowed: {allowed}")
     return kind, sel_key, sel_val
-
-
-def _top_from_loc(parser: argparse.ArgumentParser, resolver: Resolver, loc: Path, what: str) -> SourceFile:
-    """Look ``loc`` up in the resolver's index, or exit via ``parser.error``
-    naming it with ``what`` (e.g. ``"--top-file foo.vhd"`` / ``"config top
-    file /abs/foo.vhd"``)."""
-    top = resolver.by_loc.get(loc)
-    if top is None:
-        parser.error(f"{what} is not in the project")
-    return top
-
-
-def _top_from_name(parser: argparse.ArgumentParser, resolver: Resolver, name: Name) -> SourceFile:
-    """Resolve ``name`` to its providing file via the resolver, or exit via
-    ``parser.error`` with the same message :meth:`Resolver.find_top` raises."""
-    try:
-        return resolver.find_top(name)
-    except KeyError as e:
-        parser.error(str(e.args[0]) if e.args else str(e))
 
 
 def _emit(resolver, order, kind, sel_key, sel_val, file_str):
@@ -126,25 +107,24 @@ def hdldepends():
     if args.x_device is not None:
         resolver.x_device = args.x_device
 
-    # Top-selection precedence: --top-file > --top-entity > config top_*_file
+    # Top-selection precedence (shared with the Python API's `analyze()` via
+    # `select_top`): --top-file > --top-entity > config top_*_file
     # (resolver.top_loc) > config top_entity (resolver.top_name).
-    top: Optional[SourceFile] = None
+    top_file_sf: Optional[SourceFile] = None
     if args.top_file:
-        top = _top_from_loc(parser, resolver, Path(args.top_file).resolve(), f"--top-file {args.top_file}")
-    elif args.top_entity:
-        top = _top_from_name(parser, resolver, Name(top_lib, args.top_entity))
-    elif resolver.top_loc is not None:
-        top = _top_from_loc(parser, resolver, resolver.top_loc, f"config top file {resolver.top_loc}")
-    elif resolver.top_name is not None:
-        top = _top_from_name(parser, resolver, resolver.top_name)
+        top_file_sf = resolver.by_loc.get(Path(args.top_file).resolve())
+        if top_file_sf is None:
+            parser.error(f"--top-file {args.top_file} is not in the project")
+
+    top_entity_name = Name(top_lib, args.top_entity) if args.top_entity else None
+    try:
+        top = select_top(resolver, top_file_sf, top_entity_name)
+    except ValueError as e:
+        parser.error(str(e))
 
     order = []
     if top is not None:
-        order = resolver.compile_order(top)
-        # Force-include any init/forced files not already reached by the walk.
-        in_order = {sf.loc for sf in order}
-        forced = [sf for sf in resolver.init_files if sf.loc not in in_order]
-        order = forced + order
+        order = apply_forced_init_files(resolver, resolver.compile_order(top))
         output.print_compile_order(order)
 
     for kind, sel_key, sel_val, file_str in requests:

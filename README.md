@@ -52,6 +52,32 @@ hdldepends hdldepends.yaml --top-entity top \
 
 Run `hdldepends -h` for the full flag list, or see the sections below.
 
+## Python API
+
+For callers that want the compile order in-process instead of as a written
+output file, `hdldepends` also exposes `analyze()`:
+
+```python
+import hdldepends
+
+result = hdldepends.analyze("hdldepends.yaml", top_entity="top")
+
+result.compile_order  # flat, JSON-safe list of dicts -- same schema as
+                       # the `compile-order-json` CLI output's "files" list
+result.to_dict()       # {"files": result.compile_order}
+```
+
+`analyze()` accepts a single config file path or a sequence of them, plus
+keyword-only arguments mirroring the CLI flags: `top_entity`, `top_file`,
+`top_lib` (`--top-vhdl-lib`), `x_tool_version`, `x_device`, and `work_dir`
+(the directory relative config paths and a relative `top_file` are resolved
+against; defaults to the current directory).
+Top-selection precedence is the same as the CLI's: `top_file` > `top_entity` >
+the config's `top_*_file` > the config's `top_entity`; at least one of these
+must resolve to a file, or `analyze()` raises `ValueError`. Config-loading
+errors raise `hdldepends.errors.ConfigError` (or `OSError` for an unreadable
+file), same as the CLI.
+
 # Basic VHDL Example
 Create a YAML config in the root of your project listing the library VHDL files
 (globs are allowed):

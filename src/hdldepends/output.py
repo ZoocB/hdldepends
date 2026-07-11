@@ -52,7 +52,11 @@ def write_ext_list(tag_2_ext: Dict[str, List[Path]], loc: Path, tag: Optional[st
                     f.write(f"{t or ''}\t{path}\n")
 
 
-def write_compile_order_json(order: List[SourceFile], tag_2_ext: Dict[str, List[Path]], loc: Path) -> None:
+def compile_order_to_dicts(order: List[SourceFile], tag_2_ext: Dict[str, List[Path]]) -> List[Dict]:
+    """Build the flat, JSON-safe list of dicts used by both the
+    ``compile-order-json`` CLI output and :func:`hdldepends.api.analyze`:
+    EXTERNAL entries (from ``tag_2_ext``) first, then one entry per file in
+    ``order``, with ``is_top`` set on the last one."""
     files = []
     for tag, paths in tag_2_ext.items():
         for path in paths:
@@ -70,6 +74,10 @@ def write_compile_order_json(order: List[SourceFile], tag_2_ext: Dict[str, List[
         if i == len(order) - 1:
             entry["is_top"] = True
         files.append(entry)
+    return files
+
+
+def write_compile_order_json(order: List[SourceFile], tag_2_ext: Dict[str, List[Path]], loc: Path) -> None:
     with open(loc, "w") as f:
-        json.dump({"files": files}, f, indent=2)
+        json.dump({"files": compile_order_to_dicts(order, tag_2_ext)}, f, indent=2)
         f.write("\n")

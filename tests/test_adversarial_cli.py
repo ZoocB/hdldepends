@@ -13,7 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from hdldepends.cli import _build_parser, _parse_output_kind, _top_from_loc, _top_from_name
+from hdldepends.api import select_top
+from hdldepends.cli import _parse_output_kind
 from hdldepends.model import FileType, Name, SourceFile
 from hdldepends.resolver import Resolver
 
@@ -49,53 +50,47 @@ def test_parse_output_kind_selector_missing_equals():
         _parse_output_kind("compile-order:lib")
 
 
-# --- Stage 6 F10: _top_from_loc / _top_from_name (extracted from the 4 -----
-# duplicated CLI-flag / config-fallback top-selection branches). Pure
-# refactor -- these pin the exact error message TEXT the old inline code
-# produced, so consolidating the 4 branches cannot silently reword them.
+# --- Stage 6 F10 / api split: `select_top` (extracted from the 4 duplicated
+# CLI-flag / config-fallback top-selection branches, now shared with the
+# Python API's `analyze()`). These pin the exact error message TEXT the old
+# inline code produced, so consolidating the branches cannot silently reword
+# them. The explicit --top-file lookup itself (message "--top-file X is not
+# in the project") lives inline in cli.py, not in `select_top` -- it's
+# covered end to end by test_top_file_not_in_project_gives_clean_error_not_traceback
+# below.
 
-def test_top_from_loc_found_returns_the_source_file():
+def test_select_top_prefers_explicit_top_file():
     r = Resolver()
     sf = SourceFile(Path("/x/a.vhd"), FileType.VHDL)
     r.add(sf)
-    parser = _build_parser()
-    assert _top_from_loc(parser, r, sf.loc, "whatever") is sf
+    assert select_top(r, sf, Name("work", "irrelevant")) is sf
 
 
-def test_top_from_loc_missing_exits_with_pinned_message(capsys):
+def test_select_top_config_top_file_missing_message_wording():
+    # The config-fallback branch's wording ("config top file ...") must be
+    # preserved distinctly from the --top-file branch's wording.
     r = Resolver()
-    parser = _build_parser()
-    with pytest.raises(SystemExit) as ei:
-        _top_from_loc(parser, r, Path("/x/missing.vhd"), "--top-file missing.vhd")
-    assert ei.value.code == 2
-    assert "--top-file missing.vhd is not in the project" in capsys.readouterr().err
+    r.top_loc = Path("/x/missing.vhd")
+    with pytest.raises(ValueError, match=r"config top file /x/missing\.vhd is not in the project"):
+        select_top(r, None, None)
 
 
-def test_top_from_loc_config_top_file_missing_message_wording():
-    # Same helper, different `what` text -- the config-fallback branch's
-    # wording ("config top file ...") must be preserved distinctly from the
-    # --top-file branch's wording.
-    r = Resolver()
-    parser = _build_parser()
-    with pytest.raises(SystemExit):
-        _top_from_loc(parser, r, Path("/x/missing.vhd"), "config top file /x/missing.vhd")
-
-
-def test_top_from_name_found_returns_the_source_file():
+def test_select_top_by_name_found_returns_the_source_file():
     r = Resolver()
     sf = SourceFile(Path("/x/a.vhd"), FileType.VHDL, provides=[Name("work", "a")])
     r.add(sf)
-    parser = _build_parser()
-    assert _top_from_name(parser, r, Name("work", "a")) is sf
+    assert select_top(r, None, Name("work", "a")) is sf
 
 
-def test_top_from_name_missing_exits_with_pinned_message(capsys):
+def test_select_top_by_name_missing_raises_with_find_top_message():
     r = Resolver()
-    parser = _build_parser()
-    with pytest.raises(SystemExit) as ei:
-        _top_from_name(parser, r, Name("work", "does_not_exist"))
-    assert ei.value.code == 2
-    assert "does_not_exist" in capsys.readouterr().err
+    with pytest.raises(ValueError, match="does_not_exist"):
+        select_top(r, None, Name("work", "does_not_exist"))
+
+
+def test_select_top_none_named_returns_none():
+    r = Resolver()
+    assert select_top(r, None, None) is None
 
 
 # --- end-to-end subprocess -------------------------------------------------
@@ -145,8 +140,8 @@ def test_top_entity_not_found_gives_clean_error_not_traceback(tmp_path):
 def test_top_file_not_in_project_gives_clean_error_not_traceback(tmp_path):
     # Stage 6 F10 refactor safety net, end to end through the real CLI: a
     # --top-file naming a real file that just isn't part of THIS project
-    # takes the _top_from_loc path (as opposed to --top-entity's
-    # _top_from_name path, covered above).
+    # takes cli.py's inline by_loc-lookup path (as opposed to --top-entity's
+    # `select_top` / find_top path, covered above).
     work = _vhdl_basic(tmp_path)
     (work / "not_in_project.vhd").write_text("library ieee;\nentity nip is end entity;\n")
     r = _run(["hdldeps.toml", "--top-file", "not_in_project.vhd", "-o", "compile-order", "out.txt"], work)

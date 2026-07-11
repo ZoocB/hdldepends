@@ -1,6 +1,0 @@
-
-pre_cmds = 'bash test.sh'
-'vhdl_files_file@s2' = './fw_files2.txt'
-
-#vhdl_files_glob = ['./*.vhd','!*3*' ,'!*VCOMP*']
-

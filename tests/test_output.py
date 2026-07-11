@@ -27,7 +27,7 @@ def test_json_separates_base_type_from_ver_tag(tmp_path, monkeypatch):
     assert files[1]["is_top"] is True  # last entry is the top
 
 
-# --- G4: write_ext_list must not print the literal string "None" -----------
+# --- write_ext_list must not print the literal string "None" ----------------
 
 def test_write_ext_list_untagged_shows_empty_column_not_none(tmp_path):
     out = tmp_path / "ext.txt"
@@ -40,7 +40,7 @@ def test_write_ext_list_untagged_shows_empty_column_not_none(tmp_path):
     assert "None" not in text
 
 
-# --- G5: the three plain-text writers must open with explicit utf-8 --------
+# --- the three plain-text writers must open with explicit utf-8 -------------
 
 def test_output_writers_open_with_utf8_encoding(tmp_path, monkeypatch):
     calls = []

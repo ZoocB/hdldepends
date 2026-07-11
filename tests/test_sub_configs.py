@@ -69,7 +69,7 @@ def test_first_sub_config_is_not_silently_skipped(tmp_path, monkeypatch):
     assert "sub1" in stems, "FIRST sub config's file missing -- the historical bug"
     assert {"sub1", "sub2", "top"} <= stems
 
-    result = hdldepends.analyze("top.yaml")
+    result = hdldepends.analyse("top.yaml")
     paths = [f["path"] for f in result.compile_order]
     assert str(tmp_path / "sub1.vhd") in paths, "FIRST sub's file missing from compile order"
     assert str(tmp_path / "sub2.vhd") in paths
@@ -117,7 +117,7 @@ def test_sub_config_paths_are_relative_to_each_configs_own_dir(tmp_path, monkeyp
     )
     monkeypatch.chdir(tmp_path)
 
-    result = hdldepends.analyze("top.yaml")
+    result = hdldepends.analyse("top.yaml")
     paths = [f["path"] for f in result.compile_order]
     assert str(a_dir / "a_ent.vhd") in paths
     assert str(b_dir / "b_ent.vhd") in paths
@@ -137,7 +137,7 @@ def test_nested_subs_all_contribute_and_order_is_leaf_first(tmp_path, monkeypatc
     )
     monkeypatch.chdir(tmp_path)
 
-    result = hdldepends.analyze("top.yaml")
+    result = hdldepends.analyse("top.yaml")
     paths = [f["path"] for f in result.compile_order]
     assert paths == [str(tmp_path / n) for n in ("leaf.vhd", "mid.vhd", "top.vhd")]
 
@@ -163,7 +163,7 @@ def test_diamond_shared_sub_contributes_its_file_exactly_once(tmp_path, monkeypa
     shared_loc = tmp_path / "shared.vhd"
     assert [sf.loc for sf in r.files].count(shared_loc) == 1
 
-    result = hdldepends.analyze("top.yaml")
+    result = hdldepends.analyse("top.yaml")
     paths = [f["path"] for f in result.compile_order]
     assert paths.count(str(shared_loc)) == 1
     assert {str(tmp_path / n) for n in ("shared.vhd", "l.vhd", "r.vhd", "top.vhd")} == set(paths)
@@ -186,7 +186,7 @@ def test_every_sub_of_many_contributes(tmp_path, monkeypatch):
     )
     monkeypatch.chdir(tmp_path)
 
-    result = hdldepends.analyze("top.yaml")
+    result = hdldepends.analyse("top.yaml")
     paths = set(f["path"] for f in result.compile_order)
     for n in names:
         assert str(tmp_path / f"{n}.vhd") in paths, f"sub {n}.yaml's file was dropped"
@@ -207,7 +207,7 @@ def test_sub_edges_are_config_format_agnostic(tmp_path, monkeypatch):
     )
     monkeypatch.chdir(tmp_path)
 
-    result = hdldepends.analyze("top.yaml")
+    result = hdldepends.analyse("top.yaml")
     paths = [f["path"] for f in result.compile_order]
     assert str(tmp_path / "t.vhd") in paths
     assert str(tmp_path / "j.vhd") in paths

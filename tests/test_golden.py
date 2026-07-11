@@ -104,7 +104,7 @@ CASES: List[Case] = [
         argv=["--x-tool-version", "2024.2", "-o", "file-list", "file_list.txt"],
         outputs=["file_list.txt"],
     ),
-    # YAML config (Phase 4): same project as vhdl_basic, proving YAML loads
+    # YAML config: same project as vhdl_basic, proving YAML loads
     # end-to-end and produces the expected topological compile order.
     Case(
         name="yaml_basic",

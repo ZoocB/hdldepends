@@ -67,7 +67,7 @@ def test_compile_order_bd_nested_before_top(monkeypatch):
     assert stems.index("design_2") < stems.index("design_1")
 
 
-# --- E1: direct deps must be deduplicated in the compile order -------------
+# --- direct deps must be deduplicated in the compile order ------------------
 
 def test_compile_order_dedups_shared_direct_dep():
     # A direct dep (e.g. a coefficient file) shared by two parents must appear
@@ -110,7 +110,7 @@ def test_compile_order_direct_dep_pointing_at_project_file_not_duplicated():
     assert [sf.loc.stem for sf in order].count("leaf") == 1
 
 
-# --- Stage 6 F2: a direct dep that is ALSO an indexed project file must get -
+# --- a direct dep that is ALSO an indexed project file must get -------------
 # a full post-order walk (its own requires emitted first), not a dependency-
 # blind append that can also duplicate it when reached normally afterwards.
 
@@ -167,7 +167,7 @@ def test_compile_order_direct_dep_project_file_keeps_its_own_deps_ordered_first(
     assert stems.count("x") == 1
 
 
-# --- E3: ambiguous (non-Xilinx-selectable) candidates warn once per Name ----
+# --- ambiguous (non-Xilinx-selectable) candidates warn once per Name --------
 
 def test_resolve_ambiguous_candidates_warns_once_per_name(capsys):
     r = Resolver()
@@ -193,13 +193,12 @@ def test_resolve_unambiguous_name_never_warns(capsys):
     assert capsys.readouterr().err == ""
 
 
-# --- G3/F1: Resolver.add must not double-index a diamond re-add, and must ---
-# not leave a stale object in by_name when a loc is replaced (Stage 6 F1: the
-# old identical-tuple-compare skip let the FIRST add win for by_loc, which
-# kept an unparsed init_files stub over a later-parsed real file with the same
-# loc; add() is now unconditional replace-with-cleanup -- last write always
-# wins in both by_loc and by_name, and the previous object's provides entries
-# are removed from by_name so no stale, no-longer-in-by_loc object lingers).
+# --- Resolver.add must not double-index a diamond re-add, and must not ------
+# leave a stale object in by_name when a loc is replaced: add() is an
+# unconditional replace-with-cleanup -- last write always wins in both by_loc
+# and by_name (so a later-parsed real file supersedes an unparsed init_files
+# stub with the same loc), and the previous object's provides entries are
+# removed from by_name so no stale, no-longer-in-by_loc object lingers.
 
 def test_add_same_file_twice_indexed_once_in_by_name():
     # Same file listed by two sub-configs (the diamond case): by_name must

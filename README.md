@@ -55,26 +55,26 @@ Run `hdldepends -h` for the full flag list, or see the sections below.
 ## Python API
 
 For callers that want the compile order in-process instead of as a written
-output file, `hdldepends` also exposes `analyze()`:
+output file, `hdldepends` also exposes `analyse()`:
 
 ```python
 import hdldepends
 
-result = hdldepends.analyze("hdldepends.yaml", top_entity="top")
+result = hdldepends.analyse("hdldepends.yaml", top_entity="top")
 
 result.compile_order  # flat, JSON-safe list of dicts -- same schema as
                        # the `compile-order-json` CLI output's "files" list
 result.to_dict()       # {"files": result.compile_order}
 ```
 
-`analyze()` accepts a single config file path or a sequence of them, plus
+`analyse()` accepts a single config file path or a sequence of them, plus
 keyword-only arguments mirroring the CLI flags: `top_entity`, `top_file`,
 `top_lib` (`--top-vhdl-lib`), `x_tool_version`, `x_device`, and `work_dir`
 (the directory relative config paths and a relative `top_file` are resolved
 against; defaults to the current directory).
 Top-selection precedence is the same as the CLI's: `top_file` > `top_entity` >
 the config's `top_*_file` > the config's `top_entity`; at least one of these
-must resolve to a file, or `analyze()` raises `ValueError`. Config-loading
+must resolve to a file, or `analyse()` raises `ValueError`. Config-loading
 errors raise `hdldepends.errors.ConfigError` (or `OSError` for an unreadable
 file), same as the CLI.
 
@@ -222,9 +222,9 @@ All current possible {language}_{input_type} options are:
 
 
 ### Custom Tag
-At the end of a configuration file key/option a custom file tag can be added. The custom tag can be used to separate different sets of the same file type. The custom tag will be exported with the --compile-order.
+At the end of a configuration file key/option a custom file tag can be added. The custom tag can be used to separate different sets of the same file type. The custom tag is exported in the `-o compile-order` / `-o compile-order-json` outputs.
 
-The custom tags to distinguish the difference between VHDL93 and VHDL2008. This was required because currently Vivado can only add VHDL93 files (and not VHDL2008) to block diagrams.
+A typical use is distinguishing VHDL93 from VHDL2008 files. This was required because currently Vivado can only add VHDL93 files (and not VHDL2008) to block diagrams.
 
 ### Input types
 Each source key comes in three input forms (all relative to the config file's
@@ -516,6 +516,7 @@ name, then walk the index from a top file to get the compile order.
 | `resolver` | the flat name→file index and the depth-first `compile_order` walk |
 | `config`, `config_models` | load + validate config (TOML/JSON/YAML), discover files, build the `Resolver` |
 | `output` | write the compile order / file lists / JSON |
+| `api` | the public Python API (`analyse()` -> `AnalysisResult`) and the top-selection logic shared with the CLI |
 | `cli` | argument parsing and the console-script entry point |
 | `hdldepends` | facade that re-exports the public surface |
 

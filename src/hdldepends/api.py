@@ -2,7 +2,7 @@
 
 Wraps the same building blocks the CLI uses (:func:`~hdldepends.config.build_resolver`
 + :meth:`~hdldepends.resolver.Resolver.compile_order`) behind a single
-:func:`analyze` call that returns the compile order as an in-memory,
+:func:`analyse` call that returns the compile order as an in-memory,
 JSON-safe :class:`AnalysisResult` instead of writing a file.
 
 :func:`select_top` and :func:`apply_forced_init_files` also back ``cli.py``'s
@@ -31,7 +31,7 @@ def select_top(
     top_file: Optional[SourceFile],
     top_entity_name: Optional[Name],
 ) -> Optional[SourceFile]:
-    """Top-selection precedence, shared between the CLI and :func:`analyze`:
+    """Top-selection precedence, shared between the CLI and :func:`analyse`:
     an explicit top file (already looked up by the caller, so it can word its
     own "not in the project" message) > an explicit top entity name > the
     config's top file (``resolver.top_loc``) > the config's top entity
@@ -62,7 +62,7 @@ def select_top(
 
 def apply_forced_init_files(resolver: Resolver, order: List[SourceFile]) -> List[SourceFile]:
     """Prepend any ``resolver.init_files`` not already reached by the
-    compile-order walk -- both ``cli.py`` and :func:`analyze` force these
+    compile-order walk -- both ``cli.py`` and :func:`analyse` force these
     into the order even if nothing instantiates them."""
     in_order = {sf.loc for sf in order}
     forced = [sf for sf in resolver.init_files if sf.loc not in in_order]
@@ -71,7 +71,7 @@ def apply_forced_init_files(resolver: Resolver, order: List[SourceFile]) -> List
 
 @dataclass
 class AnalysisResult:
-    """The result of :func:`analyze`: a flat, JSON-safe compile order."""
+    """The result of :func:`analyse`: a flat, JSON-safe compile order."""
 
     #: Same schema/content as the ``compile-order-json`` CLI output's
     #: ``"files"`` list: EXTERNAL entries (from ``tag_2_ext``) first, then one
@@ -84,7 +84,7 @@ class AnalysisResult:
         return {"files": self.compile_order}
 
 
-def analyze(
+def analyse(
     config_files: ConfigFiles,
     *,
     top_entity: Optional[str] = None,

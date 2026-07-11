@@ -70,7 +70,7 @@ def test_parse_bd_provides_and_requires():
     assert len(f.requires) > 0
 
 
-# --- F3: read_text_file_contents encoding fallback --------------------------
+# --- read_text_file_contents encoding fallback ------------------------------
 
 def test_read_text_file_contents_falls_back_to_latin1_on_bad_utf8(tmp_path, capsys, monkeypatch):
     # \xe9 alone is not valid UTF-8 here (it's a 3-byte lead byte followed by a

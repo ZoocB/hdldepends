@@ -19,7 +19,7 @@ def test_empty_config_builds_without_error(tmp_path, monkeypatch):
 
 
 def test_min_ver_too_high_raises(tmp_path, monkeypatch):
-    # G2: bare Exception -> ConfigError (same message).
+    # Surfaces as ConfigError, not a bare Exception.
     (tmp_path / "hdldeps.toml").write_text("min_ver = 9999.0\n")
     with pytest.raises(ConfigError):
         _build(tmp_path, monkeypatch)
@@ -31,7 +31,7 @@ def test_glob_matching_nothing_is_ok(tmp_path, monkeypatch):
 
 
 def test_glob_pattern_matching_a_directory_does_not_crash(tmp_path, monkeypatch):
-    # Stage 6 F6: a glob like 'src/**' matches directories as well as files
+    # A glob like 'src/**' matches directories as well as files
     # (with recursive=True, `**` matches the 'src' dir itself and every
     # subdirectory under it, not just files) -- a directory reaching the
     # parsers previously raised a raw IsADirectoryError. Only files should
@@ -49,14 +49,14 @@ def test_glob_pattern_matching_a_directory_does_not_crash(tmp_path, monkeypatch)
 
 
 def test_immediate_self_referencing_sub_raises(tmp_path, monkeypatch):
-    # G2: bare Exception -> ConfigError (same message).
+    # Surfaces as ConfigError, not a bare Exception.
     (tmp_path / "hdldeps.toml").write_text("sub = 'hdldeps.toml'\n")
     with pytest.raises(ConfigError):
         _build(tmp_path, monkeypatch)
 
 
 def test_transitive_circular_sub_gives_clean_error(tmp_path, monkeypatch):
-    # G2: bare Exception -> ConfigError (same message).
+    # Surfaces as ConfigError, not a bare Exception.
     (tmp_path / "a.toml").write_text("sub = 'b.toml'\n")
     (tmp_path / "b.toml").write_text("sub = 'a.toml'\n")
     monkeypatch.chdir(tmp_path)

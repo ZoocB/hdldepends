@@ -54,7 +54,7 @@ def write_ext_list(tag_2_ext: Dict[str, List[Path]], loc: Path, tag: Optional[st
 
 def compile_order_to_dicts(order: List[SourceFile], tag_2_ext: Dict[str, List[Path]]) -> List[Dict]:
     """Build the flat, JSON-safe list of dicts used by both the
-    ``compile-order-json`` CLI output and :func:`hdldepends.api.analyze`:
+    ``compile-order-json`` CLI output and :func:`hdldepends.api.analyse`:
     EXTERNAL entries (from ``tag_2_ext``) first, then one entry per file in
     ``order``, with ``is_top`` set on the last one."""
     files = []

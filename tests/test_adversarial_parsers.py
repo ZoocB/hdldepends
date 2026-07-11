@@ -1,4 +1,4 @@
-"""Adversarial parser probes (Stage 5.5).
+"""Adversarial parser probes.
 
 These deliberately stress the regex/heuristic assumptions in the VHDL and
 Verilog parsers. Each test asserts the *correct* behaviour; failures reveal
@@ -181,7 +181,7 @@ def test_vhdl_remove_protected_tolerates_indent_and_trailing_text():
 
 
 def test_vhdl_remove_protected_later_orphan_end_marker_keeps_surrounding_code():
-    # Stage 6 F3: the "drop everything before an unmatched end marker" branch
+    # The "drop everything before an unmatched end marker" branch
     # previously fired on EVERY iteration, not just at the start of the scan,
     # so a SECOND, orphan end_protected marker occurring AFTER a legitimate
     # begin/end pair deleted the legitimate code between that pair and the
@@ -226,7 +226,7 @@ def test_verilog_instantiation_name_in_string_not_dep(tmp_path):
     assert ("work", "sub") not in _names(f.requires)
 
 
-# --- Stage 6 F4: declaration/package/import extraction must also blank ------
+# --- declaration/package/import extraction must also blank ------------------
 # string literals first. Only verilog_extract_module_instantiations did this;
 # a log string containing code-like text (e.g. a `$display` with a `;`
 # terminator) phantom-declared a module/package/import from inside the string.
@@ -325,7 +325,7 @@ def test_verilog_portless_module_with_parameters():
     assert decls == ["tb"]
 
 
-# --- Stage 6 F9: module declaration parameter list, one level of nested -----
+# --- module declaration parameter list, one level of nested -----------------
 # parens. The old `[^)]*` group could not span nested parens at all, so e.g.
 # `#(parameter int W = $clog2(8))` (a very ordinary construct) was missed --
 # either silently dropping the declaration ('(' form) or, for the ';' form,
@@ -412,7 +412,7 @@ def test_verilog_include_first_match_wins_over_later_dir(tmp_path):
 
 
 def test_verilog_include_with_string_argument_still_resolves_alongside_f4(tmp_path):
-    # Stage 6 F4: verilog_extract_include_files must keep seeing the
+    # verilog_extract_include_files must keep seeing the
     # ORIGINAL, un-blanked text -- its `include "file.vh"` target is itself a
     # string literal, so blanking it there (as the other extractors now do)
     # would erase the very text it needs to extract. Exercised alongside a

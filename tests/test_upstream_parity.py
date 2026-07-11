@@ -1,8 +1,8 @@
-"""Stage 9: pinned functional tests tracing this fork's behaviour back to the
+"""Pinned functional tests tracing this fork's behaviour back to the
 upstream commit range ``ac3d402..079ab03`` -- ten commits that landed only in
 the old monolith ``src/hdldepends/hdldepends.py`` on upstream ``main`` after
 this fork's flat-index rewrite diverged. Each test names the upstream SHA(s)
-it pins in a comment. Where a Stage-6/earlier test already covers a behaviour
+it pins in a comment. Where an existing test already covers a behaviour
 exactly, this file re-asserts it cheaply (a minimal, self-contained repro)
 rather than duplicating the whole thing, and says so in a comment.
 
@@ -31,7 +31,7 @@ Deliberately untested here (no behaviour to pin in this fork):
            reachable from the pickle-cache staleness path; this fork removed
            pickle caching entirely
   af29e03  index-level X-file filtering -- superseded upstream within this
-           very range (1e70df8 restored warn-only); see the Stage 9 report
+           very range (1e70df8 restored warn-only)
 """
 
 from pathlib import Path
@@ -139,8 +139,8 @@ def test_pin_9681804_use_naming_an_entity_not_a_package_no_crash_and_is_ordered(
 
 # --- (d) [490e1fb] two XCI files sharing the same coefficient file -> the -----
 # coef appears exactly once in the compile order. Covered exactly by
-# tests/test_resolver.py::test_compile_order_dedups_shared_direct_dep (Stage 6
-# E1); re-asserted here cheaply for SHA traceability.
+# tests/test_resolver.py::test_compile_order_dedups_shared_direct_dep;
+# re-asserted here cheaply for SHA traceability.
 
 def test_pin_490e1fb_shared_coefficient_file_appears_once():
     r = Resolver()

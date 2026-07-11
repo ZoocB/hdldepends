@@ -51,7 +51,7 @@ def test_tag_allowed_on_source_key_but_empty_and_double_rejected():
         validate_config({"vhdl_files@a@b": "./a.vhd"}, "t.toml")  # double tag
 
 
-# --- Stage 6 F7: an @tag on a key that doesn't take one (OTHER_KEYS) --------
+# --- an @tag on a key that doesn't take one (OTHER_KEYS) --------------------
 # previously passed validation and was then silently ignored: gather()'s
 # key_split_opt_ver / _for_each_file_spec machinery only ever looks for the
 # BARE key, so e.g. `top_entity@rtl: top` never set top_entity at all, with
@@ -112,7 +112,7 @@ def test_schema_key_sets_consistent():
     assert "ignore_libs" in OTHER_KEYS and "sub" in OTHER_KEYS
 
 
-# --- F1: path_abs_from_dir env-var substitution -----------------------------
+# --- path_abs_from_dir env-var substitution ---------------------------------
 
 def test_path_abs_from_dir_unset_env_var_raises_named_runtime_error(tmp_path, monkeypatch):
     # str.format(**os.environ) used to raise a bare KeyError for an unset
@@ -131,7 +131,7 @@ def test_path_abs_from_dir_set_env_var_substitutes(tmp_path, monkeypatch):
     assert result == (tmp_path / "foo.vhd").resolve()
 
 
-# --- F2: resolve_abs_path always normalizes ---------------------------------
+# --- resolve_abs_path always normalizes -------------------------------------
 
 def test_resolve_abs_path_normalizes_dotdot_in_absolute_paths(tmp_path):
     # Previously only relative paths were resolved, so an absolute path
@@ -143,7 +143,7 @@ def test_resolve_abs_path_normalizes_dotdot_in_absolute_paths(tmp_path):
     assert resolve_abs_path(messy) == nested.resolve()
 
 
-# --- G1: load_config STDOUT pollution + actionable missing-lib errors ------
+# --- load_config STDOUT pollution + actionable missing-lib errors -----------
 
 def test_load_config_error_goes_to_stderr_not_stdout(tmp_path, capsys):
     p = tmp_path / "bad.json"
@@ -200,7 +200,7 @@ def test_load_config_missing_yaml_raises_actionable_runtime_error(tmp_path, monk
     assert "pyyaml" in str(ei.value).lower()
 
 
-# --- G2: ConfigError replaces bare Exception --------------------------------
+# --- ConfigError replaces bare Exception ------------------------------------
 
 def test_find_config_bad_suffix_raises_config_error(tmp_path):
     with pytest.raises(ConfigError):

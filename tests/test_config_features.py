@@ -315,7 +315,7 @@ def test_top_file_key_in_sub_config_raises_configerror(tmp_path, monkeypatch):
     assert "cannot be referenced" in str(ei.value).lower()
 
 
-# --- Stage 6 F5: the sub-config top-key prohibition is order-independent ----
+# --- the sub-config top-key prohibition is order-independent ----------------
 # The old check ran INSIDE gather() and only fired when `is_root` was False,
 # but `is_root` is only meaningful the FIRST time a config is gathered -- a
 # second, later `sub` edge onto an already-`done` config short-circuited
@@ -348,7 +348,7 @@ def test_top_key_config_used_only_as_root_still_works(tmp_path, monkeypatch):
     assert r.top_name == Name("work", "top")
 
 
-# --- Stage 6 F8: top_*_file + top_entity in the SAME config warns ----------
+# --- top_*_file + top_entity in the SAME config warns -----------------------
 
 def test_top_entity_and_top_file_same_config_warns_and_top_file_wins(tmp_path, monkeypatch, capsys):
     # A single config setting BOTH a top_*_file key and top_entity was
@@ -431,7 +431,7 @@ def test_init_files_listed_by_two_sub_configs_dedupes(tmp_path, monkeypatch):
     assert len(locs) == 1
 
 
-# --- Stage 6 F1: resolver.add() replace-with-cleanup ------------------------
+# --- resolver.add() replace-with-cleanup ------------------------------------
 # The old first-wins dedup (skip re-add when (lib, ftype, ver, provides) was
 # identical) kept an unparsed init_files stub over a later-parsed real file
 # with the same loc, since a VHDL entity's provides matches the init stub's

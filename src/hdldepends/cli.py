@@ -107,7 +107,7 @@ def hdldepends():
     if args.x_device is not None:
         resolver.x_device = args.x_device
 
-    # Top-selection precedence (shared with the Python API's `analyze()` via
+    # Top-selection precedence (shared with the Python API's `analyse()` via
     # `select_top`): --top-file > --top-entity > config top_*_file
     # (resolver.top_loc) > config top_entity (resolver.top_name).
     top_file_sf: Optional[SourceFile] = None

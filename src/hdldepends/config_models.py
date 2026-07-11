@@ -91,11 +91,10 @@ def _check_keys(raw: dict) -> None:
 
         if tag is not None and base in OTHER_KEYS:
             # An @tag on a key that isn't in SOURCE_KEYS (e.g. `top_entity@rtl`)
-            # previously passed validation and was then silently ignored --
-            # `key_split_opt_ver`/`_for_each_file_spec` only ever look for the
-            # bare key, so the tagged variant never matched and the setting it
-            # was meant to make (e.g. top_entity) was never applied, with no
-            # diagnostic at all.
+            # would otherwise be silently ignored -- `key_split_opt_ver` /
+            # `_for_each_file_spec` only ever look for the bare key, so the
+            # tagged variant would never match and the setting it was meant to
+            # make would never be applied, with no diagnostic at all.
             raise ConfigError(f"key '{key}': '{base}' does not take an '@' tag")
 
     mv = raw.get("min_ver")

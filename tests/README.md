@@ -2,12 +2,12 @@
 
 ## Golden / characterization tests (`test_golden.py`)
 
-These lock in the **current observable behaviour** of the CLI so the in-progress
-refactor can proceed without silently changing output. Each case runs the tool
+These lock in the **observable behaviour** of the CLI. Each case runs the tool
 against a self-contained fixture project in `fixtures/<name>/`, captures exit
 code + stdout + stderr + declared output files (with machine-specific paths
 normalised to `<WORK>`), and compares against the committed snapshot in
-`golden/<name>.snap`.
+`golden/<name>.snap`. A `Case` may set `fixture=` to drive an existing fixture
+directory with a different invocation.
 
 ### Run
 
@@ -27,7 +27,7 @@ Use `./scripts/setup_env.sh --recreate` to rebuild the venv from scratch.
 Without the script (installs into the current environment):
 
 ```sh
-pip install -e '.[test]'      # or: pip install pytest
+pip install -e '.[dev]'
 python -m pytest
 ```
 
@@ -40,36 +40,25 @@ HDLDEPENDS_UPDATE_GOLDEN=1 python -m pytest
 Then review the diff under `tests/golden/` carefully before committing — an
 unexpected change there is exactly the regression these tests exist to catch.
 
-### Coverage notes
+## Other test modules
 
 The fixtures are curated, hermetic mini-projects (no Vivado install or
-environment variables required), built from the real source files under
-`test/vhdl/`. They target distinct code paths:
+environment variables required). Beyond the golden cases:
 
-| Case | Exercises | Output asserted |
-|------|-----------|-----------------|
-| `vhdl_basic` | VHDL parse, entity resolution, topological compile order | compile order + file list |
-| `verilog_basic` | Verilog/SV module / instantiation / include / package parse | file list |
-| `xci_coef` | Xilinx `.xci` (JSON) parse + coefficient direct-dependency | file list |
-| `bd_basic` | Xilinx `.bd` block-design parse | file list |
-| `x_device_filter` | two same-named IPs (conflict) + `--x-tool-version` filter path | file list |
-| `verilog_compile` | Verilog topological compile order (deps before top) | compile order |
-| `xci_compile` | `.xci` compile order (coefficient before IP) | compile order |
-| `xci_json` | `--compile-order-json` incl. coefficient EXTERNAL emission | json output |
-| `bd_compile` | complete `.bd` compile order (hdl + nested `.bd` before top) | compile order |
-| `x_device_compile` | `--x-tool-version/--x-device` filtering through compile order | compile order |
-| `yaml_basic` | YAML config loads end-to-end and orders correctly | compile order |
+* `test_api.py` — the public Python API (`hdldepends.analyse()`), including
+  parity with the `compile-order-json` writer.
+* `test_sub_configs.py` — multi-`sub` config gathering completeness
+  (regression suite for a historical "first sub silently skipped" bug).
+* `test_parsers.py` — the pure VHDL/Verilog parsers.
+* `test_resolver.py` — `Resolver` indexing, resolution and compile order.
+* `test_output.py` — the output writers (compile-order JSON shape, ext lists).
+* `test_config.py` / `test_config_features.py` — config validation gate,
+  TOML/JSON/YAML load parity, `@tags`, globs, skip-order, ext files.
+* `test_vendor_xilinx.py` — Xilinx `.bd`/`.xci` parsing and selection.
+* `test_examples.py` — the committed `examples/` projects build end to end.
+* `test_upstream_parity.py` — behaviours ported from the upstream project.
+* `test_adversarial_*.py` — break-it probes (malformed configs, degenerate
+  files, CLI misuse) pinning clean error handling.
 
-Beyond the golden cases there are unit tests: `test_parsers.py` (pure parsers),
-`test_graph.py` (`compute_compile_order`), `test_vendor_xilinx.py` (Xilinx
-file-object hooks), and `test_config.py` (the plain-Python config validation
-gate, TOML/JSON/YAML load parity, and a drift guard that the schema's key set
-matches the loader's `TOML_KEYS_*`).
-
-A `Case` may set `fixture=` to drive an existing fixture directory with a
-different invocation (e.g. `verilog_compile` reuses the `verilog_basic` fixture).
-
-The verilog/xci/bd **compile-order** paths were fixed during Phase 2 coverage
-widening (the verilog one needed a code fix; the Xilinx ones just needed
-complete fixtures). The XML-format `.xci` parse path still has no fixture (all
-`.xci` samples are JSON) and remains uncovered.
+The XML-format `.xci` parse path has no fixture (all `.xci` samples are JSON)
+and remains uncovered.

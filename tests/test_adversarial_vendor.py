@@ -1,4 +1,4 @@
-"""Adversarial Xilinx vendor-parser probes (Stage 5.5).
+"""Adversarial Xilinx vendor-parser probes.
 
 Malformed/degenerate .xci/.bd inputs must fail loudly, not produce a silently
 wrong file object.
@@ -19,8 +19,8 @@ def _write(tmp_path, name, content):
 
 
 def test_empty_xci_raises(tmp_path):
-    # test/vhdl/delComp2.xci is a real 0-byte file; an empty .xci is neither
-    # JSON nor XML and must raise rather than return a bogus object. Neither
+    # 0-byte .xci files occur in real projects; an empty .xci is neither JSON
+    # nor XML and must raise rather than return a bogus object. Neither
     # sub-parser can make sense of it, so parse_x_xci_file falls through to
     # its own final RuntimeError.
     p = _write(tmp_path, "empty.xci", "")

@@ -356,7 +356,7 @@ def test_xci_declares_log_messages_have_no_typos(tmp_path, capsys, monkeypatch):
     assert "decares" not in err and "tool_verison" not in err
 
 
-# --- E2: tool-version comparison must be numeric, not lexicographic ------------
+# --- tool-version comparison must be numeric, not lexicographic ----------------
 
 def test_version_key_orders_numeric_parts_correctly():
     assert _version_key("2019.2") < _version_key("2019.10")

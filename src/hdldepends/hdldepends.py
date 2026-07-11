@@ -6,7 +6,7 @@ The implementation is split into focused modules:
 * :mod:`hdldepends.constants`, :mod:`hdldepends.logging_util`,
   :mod:`hdldepends.util`, :mod:`hdldepends.discovery` -- leaf helpers
 * :mod:`hdldepends.model` -- ``Name``, ``FileType`` and the single ``SourceFile`` record
-* :mod:`hdldepends.parsers` / :mod:`hdldepends.vendors.xilinx` -- parsers (jobs)
+* :mod:`hdldepends.parsers` / :mod:`hdldepends.vendors.xilinx` -- parsers
 * :mod:`hdldepends.resolver` -- the flat index + compile-order walk
 * :mod:`hdldepends.config` -- config loading + Resolver construction
 * :mod:`hdldepends.output` -- writing the compile order / file lists

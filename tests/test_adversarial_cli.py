@@ -1,7 +1,7 @@
-"""Adversarial CLI probes (Stage 5.5).
+"""Adversarial CLI probes.
 
 Pure-function checks on the output-spec parser, plus a few end-to-end subprocess
-runs for argument errors and the (newly fixed) multi-config path.
+runs for argument errors and the multi-config path.
 """
 
 import argparse
@@ -50,14 +50,12 @@ def test_parse_output_kind_selector_missing_equals():
         _parse_output_kind("compile-order:lib")
 
 
-# --- Stage 6 F10 / api split: `select_top` (extracted from the 4 duplicated
-# CLI-flag / config-fallback top-selection branches, now shared with the
-# Python API's `analyze()`). These pin the exact error message TEXT the old
-# inline code produced, so consolidating the branches cannot silently reword
-# them. The explicit --top-file lookup itself (message "--top-file X is not
-# in the project") lives inline in cli.py, not in `select_top` -- it's
-# covered end to end by test_top_file_not_in_project_gives_clean_error_not_traceback
-# below.
+# --- `select_top` (the top-selection logic shared by the CLI and the Python
+# API's `analyse()`). These pin the exact error message TEXT so consolidating
+# or reworking the branches cannot silently reword it. The explicit --top-file
+# lookup itself (message "--top-file X is not in the project") lives inline in
+# cli.py, not in `select_top` -- it's covered end to end by
+# test_top_file_not_in_project_gives_clean_error_not_traceback below.
 
 def test_select_top_prefers_explicit_top_file():
     r = Resolver()
@@ -128,8 +126,8 @@ def test_top_entity_not_found_fails(tmp_path):
 
 
 def test_top_entity_not_found_gives_clean_error_not_traceback(tmp_path):
-    # E4: find_top raises KeyError; a typo in --top-entity previously escaped
-    # cli.py as a raw traceback instead of a clean argparse-style error.
+    # find_top raises KeyError; a typo in --top-entity must surface as a
+    # clean argparse-style error, not a raw traceback.
     work = _vhdl_basic(tmp_path)
     r = _run(["hdldeps.toml", "--top-entity", "does_not_exist", "-o", "compile-order", "out.txt"], work)
     assert r.returncode == 2  # argparse usage-error exit code, not an unhandled-exception exit
@@ -138,10 +136,10 @@ def test_top_entity_not_found_gives_clean_error_not_traceback(tmp_path):
 
 
 def test_top_file_not_in_project_gives_clean_error_not_traceback(tmp_path):
-    # Stage 6 F10 refactor safety net, end to end through the real CLI: a
-    # --top-file naming a real file that just isn't part of THIS project
-    # takes cli.py's inline by_loc-lookup path (as opposed to --top-entity's
-    # `select_top` / find_top path, covered above).
+    # End to end through the real CLI: a --top-file naming a real file that
+    # just isn't part of THIS project takes cli.py's inline by_loc-lookup path
+    # (as opposed to --top-entity's `select_top` / find_top path, covered
+    # above).
     work = _vhdl_basic(tmp_path)
     (work / "not_in_project.vhd").write_text("library ieee;\nentity nip is end entity;\n")
     r = _run(["hdldeps.toml", "--top-file", "not_in_project.vhd", "-o", "compile-order", "out.txt"], work)
@@ -221,7 +219,7 @@ def test_duplicate_output_to_same_file_last_wins(tmp_path):
 
 
 def test_glob_pattern_matching_directory_builds_cleanly_via_cli(tmp_path):
-    # Stage 6 F6, end-to-end: a glob pattern that also matches a directory
+    # End-to-end: a glob pattern that also matches a directory
     # (e.g. 'src/**' matching the 'src' dir itself) must not surface as a raw
     # IsADirectoryError traceback -- the directory is silently skipped and the
     # actual files still build normally.

@@ -1,2 +1,0 @@
-./del2.vhd
-./del3_2.vhd

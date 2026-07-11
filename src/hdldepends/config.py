@@ -221,7 +221,7 @@ def build_resolver(toml_locs, work_dir: Optional[Path] = None, top_lib: Optional
     inc_files: List[Tuple[Path, str]] = []
     done: Set[Path] = set()
     #: init_files stubs seen so far, keyed by loc. A plain dict gives last-wins
-    #: replacement (matching resolver.add's semantics -- see F1) while keeping
+    #: replacement (matching resolver.add's semantics) while keeping
     #: the position of the FIRST occurrence: re-assigning an existing key
     #: updates its value in place rather than moving it, so a later sub-config
     #: re-listing the same init file (diamond case, possibly with a different
@@ -265,12 +265,10 @@ def build_resolver(toml_locs, work_dir: Optional[Path] = None, top_lib: Optional
             try:
                 subprocess.check_output(cmd, shell=True, cwd=cwd)
             except subprocess.CalledProcessError as e:
-                # A failing pre_cmds command previously escaped as a raw
-                # CalledProcessError traceback. check_output captures stdout
-                # only (stderr passes through to the terminal as usual), so
-                # include a tail of that captured output in the message when
-                # there is any -- it is often the actual reason the command
-                # failed.
+                # check_output captures stdout only (stderr passes through to
+                # the terminal as usual), so include a tail of that captured
+                # output in the message when there is any -- it is often the
+                # actual reason the command failed.
                 msg = f"{loc}: pre_cmds command {cmd!r} failed with exit status {e.returncode}"
                 out = e.output.decode(errors="replace").strip() if e.output else ""
                 if out:
@@ -286,7 +284,7 @@ def build_resolver(toml_locs, work_dir: Optional[Path] = None, top_lib: Optional
             resolver.add(sf)  # so an instantiation of its name resolves to it
             # The same init file may be (redundantly) listed by two sub-configs
             # (the diamond case), possibly with a different lib/name each time;
-            # last-wins, matching resolver.add's by_loc semantics (F1), while a
+            # last-wins, matching resolver.add's by_loc semantics, while a
             # plain dict keeps the position of the FIRST occurrence.
             init_by_loc[sf.loc] = sf
         for x_key in ("x_tool_version", "x_device"):

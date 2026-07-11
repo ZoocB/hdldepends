@@ -57,16 +57,10 @@ line-length = 125
 select = ["E", "F", "W", "B", "I", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
-# Compat facade intentionally star-imports the split-out modules to keep
-# re-exporting the public surface for `hdldepends.hdldepends:hdldepends`. The
-# import order is significant (later `import *` wins on a name collision) and
-# deliberately matches the dependency chain documented in the module
-# docstring, so isort's alphabetical resort (I001) is also suppressed here.
+# Compat facade star-imports the split-out modules in significant order (later
+# `import *` wins on a name collision), so unused/star/isort checks are off here.
 "src/hdldepends/hdldepends.py" = ["F401", "F403", "I001"]
-# `List[...]` -> `list[...]` (UP006) is only offered via --unsafe-fixes even
-# with `from __future__ import annotations` present, and the codebase
-# otherwise uses typing.List consistently for py38 runtime clarity -- not
-# auto-applied per the py38-safe-rewrites-only policy.
+# Keeps typing.List (py38 runtime clarity), consistent with the rest of the code.
 "tests/test_golden.py" = ["UP006"]
 
 [tool.mypy]

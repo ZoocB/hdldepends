@@ -1,0 +1,30 @@
+# Top-level project config (YAML).
+#
+# Demonstrates a complex, multi-language project:
+#   * VHDL split across two libraries: `common_lib` (via the sub-config) and `work`
+#   * Verilog (.v) and SystemVerilog (.sv) in the `work` library
+#   * cross-language instantiation (VHDL datapath instantiates a Verilog module)
+#   * cross-library instantiation (work.datapath instantiates common_lib.adder)
+#
+# Run it with:
+#   hdldepends hdldeps.yaml --top-entity top -o compile-order order.txt
+
+# Standard libraries that are provided by the simulator/synthesiser and so are
+# not part of the project's own compile order.
+ignore_libs:
+  - ieee
+  - std
+
+# Pull in the reusable library as a sub-config (also YAML).
+sub: common_lib.yaml
+
+# Project (top-level) VHDL, compiled into the default `work` library.
+vhdl_files:
+  work:
+    - ./rtl/datapath.vhd
+    - ./rtl/top.vhd
+
+# Mixed Verilog + SystemVerilog sources (also `work`).
+verilog_files:
+  - ./rtl/fifo.sv
+  - ./rtl/sync_fifo.v

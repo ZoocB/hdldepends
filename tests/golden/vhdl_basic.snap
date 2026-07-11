@@ -1,0 +1,14 @@
+$ hdldepends hdldeps.toml --top-entity del21 -o compile-order compile_order.txt -o file-list file_list.txt
+exit: 0
+--- stdout ---
+compile order:
+  VHDL:          |---work: <WORK>/del211.vhd
+  VHDL:          work: <WORK>/del21.vhd
+--- stderr ---
+
+--- file: compile_order.txt ---
+VHDL work <WORK>/del211.vhd
+VHDL work <WORK>/del21.vhd
+--- file: file_list.txt ---
+work	<WORK>/del21.vhd
+work	<WORK>/del211.vhd

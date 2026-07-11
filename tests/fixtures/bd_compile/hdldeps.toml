@@ -1,0 +1,3 @@
+ignore_libs = ['ieee', 'std']
+x_bd_files = ['./design_1.bd', './design_2.bd']
+vhdl_files = { work = ['./bd_hdl.vhd'] }

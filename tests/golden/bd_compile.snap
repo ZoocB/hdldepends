@@ -1,0 +1,13 @@
+$ hdldepends hdldeps.toml --top-entity design_1 -o compile-order compile_order.txt
+exit: 0
+--- stdout ---
+compile order:
+  VHDL:          |---work: <WORK>/bd_hdl.vhd
+  X_BD:          |---work: <WORK>/design_2.bd
+  X_BD:          work: <WORK>/design_1.bd
+--- stderr ---
+
+--- file: compile_order.txt ---
+VHDL work <WORK>/bd_hdl.vhd
+X_BD work <WORK>/design_2.bd
+X_BD work <WORK>/design_1.bd

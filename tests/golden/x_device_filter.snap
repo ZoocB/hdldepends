@@ -1,0 +1,9 @@
+$ hdldepends hdldeps.toml --x-tool-version 2024.2 -o file-list file_list.txt
+exit: 0
+--- stdout ---
+
+--- stderr ---
+
+--- file: file_list.txt ---
+work	<WORK>/axi_a.xci
+work	<WORK>/axi_b.xci

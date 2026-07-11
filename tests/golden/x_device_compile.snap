@@ -1,0 +1,9 @@
+$ hdldepends hdldeps.toml --top-entity axi_bram_ctrl_0 --x-tool-version 2024.2 --x-device xczu1cg-sbva484-2-e -o compile-order compile_order.txt
+exit: 0
+--- stdout ---
+compile order:
+  X_XCI:         work: <WORK>/axi_b.xci
+--- stderr ---
+
+--- file: compile_order.txt ---
+X_XCI work <WORK>/axi_b.xci

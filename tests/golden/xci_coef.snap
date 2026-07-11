@@ -1,0 +1,8 @@
+$ hdldepends hdldeps.toml -o file-list file_list.txt
+exit: 0
+--- stdout ---
+
+--- stderr ---
+
+--- file: file_list.txt ---
+work	<WORK>/fir_compiler_0.xci

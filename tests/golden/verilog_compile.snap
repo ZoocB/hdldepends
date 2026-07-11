@@ -1,0 +1,15 @@
+$ hdldepends hdldeps.toml --top-entity up_down_counter -o compile-order compile_order.txt
+exit: 0
+--- stdout ---
+compile order:
+  VERILOG_INCLUDE: |---work: <WORK>/inc.vh
+  VERILOG:       |---work: <WORK>/misc_package.sv
+  VERILOG:       |---work: <WORK>/axis_data_to_chdr.sv
+  VERILOG:       work: <WORK>/counter.v
+--- stderr ---
+[WARNING] <WORK>/axis_data_to_chdr.sv: could not resolve dependency work.iobuf
+--- file: compile_order.txt ---
+VERILOG_INCLUDE work <WORK>/inc.vh
+VERILOG work <WORK>/misc_package.sv
+VERILOG work <WORK>/axis_data_to_chdr.sv
+VERILOG work <WORK>/counter.v

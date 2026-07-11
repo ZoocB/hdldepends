@@ -1,0 +1,11 @@
+$ hdldepends hdldeps.toml --top-entity led_controller_tb -o compile-order:lib=work compile_order.txt
+exit: 0
+--- stdout ---
+compile order:
+  VHDL:          |---work: <WORK>/led_controller.vhd
+  VHDL:          work: <WORK>/led_controller_tb.vhd
+--- stderr ---
+
+--- file: compile_order.txt ---
+<WORK>/led_controller.vhd
+<WORK>/led_controller_tb.vhd

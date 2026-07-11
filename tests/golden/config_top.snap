@@ -1,0 +1,14 @@
+$ hdldepends hdldeps.toml -o compile-order compile_order.txt -o file-list file_list.txt
+exit: 0
+--- stdout ---
+compile order:
+  VHDL:          |---work: <WORK>/leaf.vhd
+  VHDL:          work: <WORK>/top.vhd
+--- stderr ---
+
+--- file: compile_order.txt ---
+VHDL work <WORK>/leaf.vhd
+VHDL work <WORK>/top.vhd
+--- file: file_list.txt ---
+work	<WORK>/leaf.vhd
+work	<WORK>/top.vhd

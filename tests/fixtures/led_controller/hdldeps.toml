@@ -1,0 +1,2 @@
+ignore_libs = ['ieee']
+vhdl_files_glob = ['./led_controller*.vhd']

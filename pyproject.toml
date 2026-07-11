@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hdldepends"
-version = "0.1.3"
+dynamic = ["version"]
 authors = [
   { name="Pev Hall", email="pev.hall@gmail.com" },
 ]
@@ -13,10 +13,27 @@ readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
 ]
 dependencies = [
-  "tomli; python_version<'3.10'"
+  "tomli; python_version<'3.10'",
+  "PyYAML",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+]
+dev = [
+  "pytest",
+  "mypy",
+  "ruff",
 ]
 
 [project.scripts]
@@ -25,3 +42,45 @@ hdldepends = "hdldepends.hdldepends:hdldepends"
 [project.urls]
 Homepage = "https://github.com/pevhall/hdldepends"
 Issues = "https://github.com/pevhall/hdldepends/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "hdldepends.constants.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py38"
+line-length = 125
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Compat facade intentionally star-imports the split-out modules to keep
+# re-exporting the public surface for `hdldepends.hdldepends:hdldepends`. The
+# import order is significant (later `import *` wins on a name collision) and
+# deliberately matches the dependency chain documented in the module
+# docstring, so isort's alphabetical resort (I001) is also suppressed here.
+"src/hdldepends/hdldepends.py" = ["F401", "F403", "I001"]
+# `List[...]` -> `list[...]` (UP006) is only offered via --unsafe-fixes even
+# with `from __future__ import annotations` present, and the codebase
+# otherwise uses typing.List consistently for py38 runtime clarity -- not
+# auto-applied per the py38-safe-rewrites-only policy.
+"tests/test_golden.py" = ["UP006"]
+
+[tool.mypy]
+# All modules are mypy-clean under this config, including function bodies that
+# lack full parameter annotations (check_untyped_defs). The relaxed
+# no-redef/assignment/misc trio is scoped to the compat facade below -- every
+# other module is checked at full strictness for those codes too.
+files = ["src/hdldepends"]
+ignore_missing_imports = true
+follow_imports = "silent"
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+# `from .module import *` re-exports are intentional in the compat facade, and
+# read by mypy as redefinitions / type mismatches.
+module = "hdldepends.hdldepends"
+disable_error_code = ["no-redef", "assignment", "misc"]

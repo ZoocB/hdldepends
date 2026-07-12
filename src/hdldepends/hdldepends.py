@@ -2724,10 +2724,10 @@ class LookupMulti(LookupSingular):  # {{{
                 return top_lib
         return None
 
-    def _get_named_item(self, item_ref: str, name: Name, call_back_func_arr, f_obj_required_by: Optional[FileObj]) -> Optional[FileObj]:
+    def _get_named_item(self, item_ref: str, name: Name, call_back_func_arr, f_obj_required_by: Optional[FileObj], call_back_kw_args : dict = {}) -> Optional[FileObj]:
         for call_back in call_back_func_arr:
             try:
-                result = call_back(name, f_obj_required_by)
+                result = call_back(name, f_obj_required_by, **call_back_kw_args)
                 return result
             except KeyError:
                 pass
@@ -2782,19 +2782,13 @@ class LookupMulti(LookupSingular):  # {{{
         return f_obj
 
     def get_entity(self, name: Name, f_obj_required_by: Optional[FileObj], ignore_lib=False) -> Optional[FileObj]:
-        def cb(name: Name, f_obj_required_by: Optional[FileObj]):
+        def cb(name: Name, f_obj_required_by: Optional[FileObj], ignore_lib):
             return LookupSingular.get_entity(self, name, f_obj_required_by, ignore_lib=ignore_lib)
 
-        callbacks = []
-        for l in self.look_subs:
-
-            def cb2(name: Name, f_obj_required_by):
-                return l.get_entity(name=name, f_obj_required_by=f_obj_required_by, ignore_lib=ignore_lib)
-
-            callbacks.append(cb2)
-
+        callbacks = [s.get_entity for s in self.look_subs]
+        call_back_kw_args = {"ignore_lib" : ignore_lib}
         call_back_func_arr = [cb] + callbacks
-        return self._get_named_item("entity", name, call_back_func_arr, f_obj_required_by)
+        return self._get_named_item("entity", name, call_back_func_arr, f_obj_required_by, call_back_kw_args)
 
     def _get_x_entity_by_name_only(self, name: str, f_obj_required_by: Optional[FileObj]) -> Optional[Tuple[FileObj, List[FileObj]]]:
         """
@@ -3389,10 +3383,6 @@ def hdldepends():
         name = Name(lib, args.top_entity)
         look.set_top_entity(name, do_not_replace_top_file=True)
 
-    if look.has_top_file():
-        assert isinstance(look, LookupPrj)
-        look.print_compile_order()
-
     if args.file_list is not None:
         look.write_file_list(Path(args.file_list))
 
@@ -3411,6 +3401,10 @@ def hdldepends():
     if args.ext_file_list_tag is not None:
         for tag, f in args.ext_file_list_tag:
             look.write_ext_file_list(Path(f), tag)
+
+    if look.has_top_file():
+        assert isinstance(look, LookupPrj)
+        look.print_compile_order()
 
     if args.compile_order is not None:
         assert look.has_top_file()

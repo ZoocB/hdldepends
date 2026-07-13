@@ -1,0 +1,26 @@
+# Complex example: VHDL-2008 sources, a globbed-then-excluded legacy folder,
+# a mixed-in SystemVerilog module, and external (non-compiled) files.
+#
+#   hdldepends hdldeps.yaml --top-entity top -o compile-order order.txt
+#   hdldepends hdldeps.yaml -o ext-list:tag=xdc xdc.txt
+
+ignore_libs:
+  - ieee
+  - std
+
+# All RTL VHDL is VHDL-2008. The whole rtl/ tree is globbed in, then the stale
+# rtl/_old/ folder is excluded with a serial `!` pattern.
+"vhdl_files@VHDL2008":
+  work:
+    - 'rtl/**/*.vhd'
+    - '!rtl/_old/*.vhd'
+
+# A SystemVerilog clock divider (work library; no VHDL-standard tag).
+verilog_files:
+  - 'rtl/**/*.sv'
+
+# External files: not scanned, never in the compile order, grouped by @tag.
+"ext_files@xdc":
+  - 'constraints/*.xdc'
+"ext_files@tcl":
+  - 'scripts/*.tcl'

@@ -1,0 +1,6 @@
+# Reusable VHDL library, compiled into the `common_lib` library.
+# Pulled in by the top-level hdldeps.yaml via its `sub` option.
+vhdl_files:
+  common_lib:
+    - ./common_lib/math_pkg.vhd
+    - ./common_lib/adder.vhd

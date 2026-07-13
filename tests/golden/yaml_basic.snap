@@ -1,0 +1,11 @@
+$ hdldepends hdldeps.yaml --top-entity del21 -o compile-order compile_order.txt
+exit: 0
+--- stdout ---
+compile order:
+  VHDL:          |---work: <WORK>/del211.vhd
+  VHDL:          work: <WORK>/del21.vhd
+--- stderr ---
+
+--- file: compile_order.txt ---
+VHDL work <WORK>/del211.vhd
+VHDL work <WORK>/del21.vhd

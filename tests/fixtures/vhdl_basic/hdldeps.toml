@@ -1,0 +1,2 @@
+ignore_libs = ['ieee', 'std']
+vhdl_files = { work = ['./del211.vhd', './del21.vhd'] }

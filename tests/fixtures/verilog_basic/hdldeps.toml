@@ -1,0 +1,2 @@
+verilog_files_glob = ['./*.v', './*.sv']
+verilog_include_files_glob = './*.vh'

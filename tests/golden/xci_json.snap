@@ -1,0 +1,24 @@
+$ hdldepends hdldeps.toml --top-entity fir_compiler_0 -o compile-order-json compile_order.json
+exit: 0
+--- stdout ---
+compile order:
+  DIRECT:        |---work: <WORK>/fir_compiler_0_coefs.coe
+  X_XCI:         work: <WORK>/fir_compiler_0.xci
+--- stderr ---
+
+--- file: compile_order.json ---
+{
+  "files": [
+    {
+      "type": "DIRECT",
+      "library": "work",
+      "path": "<WORK>/fir_compiler_0_coefs.coe"
+    },
+    {
+      "type": "X_XCI",
+      "library": "work",
+      "path": "<WORK>/fir_compiler_0.xci",
+      "is_top": true
+    }
+  ]
+}

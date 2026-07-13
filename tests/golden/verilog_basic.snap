@@ -1,0 +1,11 @@
+$ hdldepends hdldeps.toml -o file-list file_list.txt
+exit: 0
+--- stdout ---
+
+--- stderr ---
+
+--- file: file_list.txt ---
+work	<WORK>/inc.vh
+work	<WORK>/axis_data_to_chdr.sv
+work	<WORK>/counter.v
+work	<WORK>/misc_package.sv

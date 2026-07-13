@@ -1,0 +1,3 @@
+ignore_libs = ['ieee', 'std']
+vhdl_files = { work = ['./leaf.vhd', './top.vhd'] }
+top_entity = 'top'

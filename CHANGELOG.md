@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [PEP 440](https://peps.python.org/pep-0440/) for
 version identifiers (`.devN` marks a development pre-release).
 
+## [0.3.0.dev1] - 2026-07-18
+
+### Added
+- `AnalysisResult.format_compile_order()` returns the human-readable,
+  tree-indented compile-order listing as a string, and
+  `AnalysisResult.print_compile_order()` prints it -- the same output the CLI
+  emits. `AnalysisResult` now retains the underlying `SourceFile` order (a
+  non-serialized `source_files` field; `to_dict()` is unchanged). The shared
+  rendering logic lives in `output.format_compile_order`.
+
 ## [0.3.0.dev0] - 2026-07-18
 
 Opens the 0.3.0 development cycle.

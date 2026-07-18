@@ -16,8 +16,8 @@ from hdldepends import api
 from hdldepends.config import build_resolver
 from hdldepends.constants import LIB_DEFAULT
 from hdldepends.errors import ConfigError
-from hdldepends.model import Name
-from hdldepends.output import write_compile_order_json
+from hdldepends.model import Name, SourceFile
+from hdldepends.output import format_compile_order, write_compile_order_json
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
@@ -303,3 +303,64 @@ def test_x_tool_version_and_x_device_default_to_unset_on_resolver(tmp_path, monk
     resolver = build_resolver("hdldeps.toml", work_dir=Path("."), top_lib=LIB_DEFAULT)
     assert resolver.x_tool_version == ""
     assert resolver.x_device == ""
+
+
+# --- AnalysisResult.format_compile_order / print_compile_order --------------
+
+def test_format_compile_order_returns_indented_string(tmp_path, monkeypatch):
+    # del21 (the top) instantiates del211, so the resolved order is
+    # [del211 @ level 1, del21 @ level 0]: the dependency is tree-indented with
+    # "|---" and the top is not, exactly as the CLI prints it.
+    work = tmp_path / "proj"
+    shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
+    monkeypatch.chdir(work)
+
+    result = hdldepends.analyse("hdldeps.toml", top_entity="del21")
+    text = result.format_compile_order()
+
+    assert isinstance(text, str)
+    lines = text.splitlines()
+    assert lines[0] == "compile order:"
+    dep_line = next(ln for ln in lines if ln.endswith("del211.vhd"))
+    top_line = next(ln for ln in lines if ln.endswith("del21.vhd"))
+    assert "|---" in dep_line          # dependency is indented
+    assert "|---" not in top_line      # top sits at level 0
+
+
+def test_format_compile_order_matches_free_function(tmp_path, monkeypatch):
+    # The method is faithful to the CLI: it renders the retained SourceFile
+    # order through the very same output.format_compile_order helper the CLI
+    # uses, so the two are byte-for-byte identical.
+    work = tmp_path / "proj"
+    shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
+    monkeypatch.chdir(work)
+
+    result = hdldepends.analyse("hdldeps.toml", top_entity="del21")
+    assert result.format_compile_order() == format_compile_order(result.source_files)
+    assert all(isinstance(sf, SourceFile) for sf in result.source_files)
+
+
+def test_print_compile_order_writes_format_to_stdout(tmp_path, monkeypatch, capsys):
+    work = tmp_path / "proj"
+    shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
+    monkeypatch.chdir(work)
+
+    result = hdldepends.analyse("hdldeps.toml", top_entity="del21")
+    result.print_compile_order()
+
+    out = capsys.readouterr().out
+    assert out == result.format_compile_order() + "\n"
+
+
+def test_source_files_excluded_from_to_dict(tmp_path, monkeypatch):
+    # source_files holds live SourceFile objects for rendering only; the
+    # JSON-safe representation must not leak them.
+    work = tmp_path / "proj"
+    shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
+    monkeypatch.chdir(work)
+
+    result = hdldepends.analyse("hdldeps.toml", top_entity="del21")
+    d = result.to_dict()
+    assert set(d.keys()) == {"files"}
+    # round-trips through JSON without hitting the non-serializable SourceFiles
+    json.dumps(d)

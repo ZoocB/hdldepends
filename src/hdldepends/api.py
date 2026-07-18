@@ -11,14 +11,14 @@ forced-init-files behaviour are defined exactly once and shared by both
 entry points.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from .config import add_top_file_by_path, build_resolver
 from .constants import LIB_DEFAULT
 from .model import Name, SourceFile
-from .output import compile_order_to_dicts
+from .output import compile_order_to_dicts, format_compile_order, print_compile_order
 from .resolver import Resolver
 from .util import path_abs_from_dir
 
@@ -78,10 +78,30 @@ class AnalysisResult:
     #: entry per compiled file, with ``is_top`` set on the last one.
     compile_order: List[Dict[str, Any]]
 
+    #: The underlying resolved :class:`~hdldepends.model.SourceFile` order
+    #: (compiled files only -- no EXTERNAL entries), retained so
+    #: :meth:`format_compile_order` / :meth:`print_compile_order` can render the
+    #: same tree-indented view the CLI prints. Deliberately excluded from
+    #: :meth:`to_dict` (it is not JSON-safe); ``compile_order`` above is the
+    #: serializable form.
+    source_files: List[SourceFile] = field(default_factory=list, repr=False)
+
     def to_dict(self) -> Dict[str, Any]:
         """The same top-level shape as the ``compile-order-json`` file, e.g.
         for ``json.dump``: ``{"files": self.compile_order}``."""
         return {"files": self.compile_order}
+
+    def format_compile_order(self) -> str:
+        """The human-readable, tree-indented compile-order listing (identical to
+        what the CLI prints), returned as a string. Compiled files only; the
+        leading EXTERNAL entries carried by :attr:`compile_order` are not shown,
+        matching the CLI's ``print_compile_order``."""
+        return format_compile_order(self.source_files)
+
+    def print_compile_order(self) -> None:
+        """Print :meth:`format_compile_order` to stdout -- the same output the
+        CLI emits for the resolved compile order."""
+        print_compile_order(self.source_files)
 
 
 def analyse(
@@ -159,4 +179,7 @@ def analyse(
         )
 
     order = apply_forced_init_files(resolver, resolver.compile_order(top))
-    return AnalysisResult(compile_order=compile_order_to_dicts(order, resolver.tag_2_ext))
+    return AnalysisResult(
+        compile_order=compile_order_to_dicts(order, resolver.tag_2_ext),
+        source_files=order,
+    )

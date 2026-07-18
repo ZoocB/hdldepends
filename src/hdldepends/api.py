@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from .config import build_resolver
+from .config import add_top_file_by_path, build_resolver
 from .constants import LIB_DEFAULT
 from .model import Name, SourceFile
 from .output import compile_order_to_dicts
@@ -104,9 +104,11 @@ def analyse(
         (TOML / JSON / YAML, same as the CLI's positional ``config_file``
         arguments).
     :param top_entity: top-level entity/module name (``--top-entity``).
-    :param top_file: path to the top-level file; must already be reachable
-        from ``config_files`` (``--top-file``). A relative path is anchored
-        to ``work_dir``, like relative ``config_files``.
+    :param top_file: path to the top-level file (``--top-file``). If it is not
+        already part of the project, it is parsed and added (its file type is
+        inferred from the extension), so a testbench top level need not be listed
+        in the config just to run a basic compile order. A relative path is
+        anchored to ``work_dir``, like relative ``config_files``.
     :param top_lib: default VHDL library for ``top_entity`` and for
         unqualified names in the config (``--top-vhdl-lib``); defaults to
         :data:`~hdldepends.constants.LIB_DEFAULT`.
@@ -116,10 +118,12 @@ def analyse(
         (``--x-device``).
     :param work_dir: directory relative ``config_files`` and a relative
         ``top_file`` are resolved against; defaults to the current directory.
-    :raises hdldepends.errors.ConfigError: the config fails validation.
+    :raises hdldepends.errors.ConfigError: the config fails validation, or a
+        ``top_file`` not already in the project has an extension no parser
+        recognises.
     :raises OSError: a config or referenced source file can't be read.
     :raises ValueError: no top could be determined, or an explicitly named
-        top (file or entity) does not resolve to a project file.
+        top entity does not resolve to a project file.
     """
     top_lib_effective = top_lib or LIB_DEFAULT
     files = [config_files] if isinstance(config_files, (str, Path)) else list(config_files)
@@ -141,7 +145,10 @@ def analyse(
         loc = path_abs_from_dir(resolved_work_dir, Path(top_file)).resolve()
         top_file_sf = resolver.by_loc.get(loc)
         if top_file_sf is None:
-            raise ValueError(f"top file {top_file} is not in the project")
+            # Not listed in the config: parse and add it (inferring the file type
+            # from its extension), so a testbench top level need not be added to
+            # the config just to run a basic simulation compile order.
+            top_file_sf = add_top_file_by_path(resolver, loc, lib=top_lib_effective)
 
     top_entity_name = Name(top_lib_effective, top_entity) if top_entity else None
     top = select_top(resolver, top_file_sf, top_entity_name)

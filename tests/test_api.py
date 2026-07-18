@@ -162,8 +162,9 @@ def test_relative_top_file_is_anchored_to_work_dir(tmp_path, monkeypatch):
     assert result.compile_order[-1]["path"] == str(work / "del21.vhd")
 
     # Sanity check of the contrast: without work_dir the same relative
-    # top_file is CWD-relative, which from `elsewhere` names no project file.
-    with pytest.raises(ValueError, match="is not in the project"):
+    # top_file is CWD-relative, which from `elsewhere` names a path that is
+    # neither in the project nor on disk -- the auto-add then fails to read it.
+    with pytest.raises(OSError):
         hdldepends.analyse(str(work / "hdldeps.toml"), top_file="del21.vhd")
 
 
@@ -195,14 +196,52 @@ def test_top_entity_not_found_raises_value_error(tmp_path, monkeypatch):
         hdldepends.analyse("hdldeps.toml", top_entity="does_not_exist")
 
 
-def test_top_file_not_in_project_raises_value_error(tmp_path, monkeypatch):
+def test_top_file_not_in_project_is_added(tmp_path, monkeypatch):
+    # A top_file not listed in the config is parsed and added on the fly (its
+    # type inferred from the .vhd extension), so a testbench top level need not
+    # be added to the config just to run a compile order.
     work = tmp_path / "proj"
     shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
     (work / "not_in_project.vhd").write_text("library ieee;\nentity nip is end entity;\n")
     monkeypatch.chdir(work)
 
-    with pytest.raises(ValueError, match="not_in_project.vhd"):
-        hdldepends.analyse("hdldeps.toml", top_file="not_in_project.vhd")
+    result = hdldepends.analyse("hdldeps.toml", top_file="not_in_project.vhd")
+    assert result.compile_order[-1]["path"].endswith("not_in_project.vhd")
+    assert result.compile_order[-1]["is_top"] is True
+
+
+def test_added_top_file_pulls_in_config_dependencies(tmp_path, monkeypatch):
+    # An auto-added top file's dependencies still resolve against the project:
+    # a testbench that instantiates a config entity produces the full order.
+    work = tmp_path / "proj"
+    shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
+    (work / "tb.vhd").write_text(
+        "library ieee;\n"
+        "entity tb is end entity;\n"
+        "architecture sim of tb is\n"
+        "begin\n"
+        "  dut : entity work.del21\n"
+        "  port map (\n"
+        "    clk => clk\n"
+        "  );\n"
+        "end architecture;\n"
+    )
+    monkeypatch.chdir(work)
+
+    result = hdldepends.analyse("hdldeps.toml", top_file="tb.vhd")
+    paths = [f["path"] for f in result.compile_order]
+    assert paths[-1].endswith("tb.vhd")
+    assert any(p.endswith("del21.vhd") for p in paths[:-1])
+
+
+def test_added_top_file_unknown_extension_raises(tmp_path, monkeypatch):
+    work = tmp_path / "proj"
+    shutil.copytree(FIXTURES_DIR / "vhdl_basic", work)
+    (work / "top.qqq").write_text("nonsense\n")
+    monkeypatch.chdir(work)
+
+    with pytest.raises(ConfigError, match="extension"):
+        hdldepends.analyse("hdldeps.toml", top_file="top.qqq")
 
 
 def test_no_top_anywhere_raises_value_error(tmp_path, monkeypatch):
